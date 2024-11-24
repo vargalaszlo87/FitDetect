@@ -25,12 +25,20 @@
 
 const FitDetect = {
 
-    typeOfCalcError: "MSE",
+    // setup
+    typeOfCalcError: "RMSE",
+    alwaysNormalize: true,
+    epsilon: 1e-12,
 
     normalize (data) {
         const min = Math.min(...data);
         const max = Math.max(...data);
-        return data.map(value => (value - min) / (max - min))
+            return data.map(value => {
+                let normalizedValue = (value - min) / (max - min);
+                if (this.epsilon > 0 && normalizedValue === 0)
+                    normalizedValue += this.epsilon;
+                return normalizedValue;
+            });
     },
 
     pearsonCorrelation (x, y) {
@@ -130,6 +138,17 @@ const FitDetect = {
     },
 
     identifyFunctionType(x, y) {
+
+        console.log(x, y);
+        console.log(this.epsilon);
+
+        if (this.alwaysNormalize) {
+            x = this.normalize(x);
+            y = this.normalize(y);
+        }
+
+        console.log(x, y);
+
         // Linear
         const linearModel = this.linearRegression(x, y);
         const linearPred = x.map(xi => linearModel.slope * xi + linearModel.intercept);
