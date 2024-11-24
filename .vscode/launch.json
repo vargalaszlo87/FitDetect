@@ -11,7 +11,8 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\fit-detect.js"
+            "program": "${workspaceFolder}\\fit-detect.js",
+            "console": "integratedTerminal"
         }
     ]
 }
