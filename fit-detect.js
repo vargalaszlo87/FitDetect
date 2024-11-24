@@ -1,34 +1,49 @@
-
-/*
-    Linear regression with transform of dataset
-    Linear          ( y = mx + c )  
-    Logaritmic      ( y = a + b * log(x) )      x --> log(x)
-    Power           ( y = a * x^b )             x,y --> log(x), log(y)
-    Exponential     ( y = a * e^bx )            y --> log(y)
-
-    Quadratic regression
-                    ( y = ax^2 + bx + c )
-
-    Estimate sin
-                    ( y = a * sin(bx + c) + d )
-
-    Exponential decay regression
-                    ( y = a * e^-bx + c )
-
-    Rational regression
-                    ( y = a / (x + b) + c )
-
-    Polinomal regression
-                    ( y = a_n * x^n + a_n-1 + x^n-1 + ... + a_1 * x + a_0 ) 
-
-*/
-
 const FitDetect = {
 
-    // setup
-    typeOfCalcError: "RMSE",
-    alwaysNormalize: true,
+/* ANCHOR setup variable
+
+    You can set the operations of fit detector in this section.
+
+    typeOfCalcError:    set the type of error calculation
+    alwaysNormalize:    you can set the normalize for all dataset
+    epsilon:            if you have null in your dataset, then change it epsilon
+
+------------------------------------------------*/
+
+    typeOfCalcError: "MSE",
+    alwaysNormalize: false,
     epsilon: 1e-12,
+
+/* ANCHOR math functions
+
+    Here are the cores of the math functions.
+
+    | Methods:
+
+    normalize (data)
+    pearsonCorrelation (x, y)
+    linearRegression (x, y)
+    quadraticRegression(x, y)
+    sinusoidalRegression(x, y)
+    sinusoidalRegression(x, y)
+    exponentialDecayRegression(x, y)
+    rationalRegression(x, y)
+
+    | Fit test:
+
+    Linear regression with transform of dataset
+    Linear                          ( y = mx + c )  
+    Logaritmic                      ( y = a + b * log(x) )      x --> log(x)
+    Power                           ( y = a * x^b )             x,y --> log(x), log(y)
+    Exponential                     ( y = a * e^bx )            y --> log(y)
+
+    Quadratic regression            ( y = ax^2 + bx + c )
+    Estimate sin                    ( y = a * sin(bx + c) + d )
+    Exponential decay regression    ( y = a * e^-bx + c )
+    Rational regression             ( y = a / (x + b) + c )
+    Polinomal regression            ( y = a_n * x^n + a_n-1 + x^n-1 + ... + a_1 * x + a_0 ) 
+
+------------------------------------------------*/
 
     normalize (data) {
         const min = Math.min(...data);
@@ -101,7 +116,19 @@ const FitDetect = {
         const a = 1 / model.slope;
         const b = -model.intercept / model.slope;
         return { a, b };
-    },    
+    },  
+    
+/* ANCHOR Error 
+
+    This version calcualtes thre methods as:
+
+        MSE - Mean Squared Error,
+        RMSE - Root Mean Squared Error,
+        MAE - Mean Absolute Error.
+
+    you can choose by calcError function.
+
+------------------------------------------------*/
 
     meanSquaredError (yTrue, yPred) {
         if (yTrue.length != yPred.length)
@@ -137,18 +164,18 @@ const FitDetect = {
         }
     },
 
-    identifyFunctionType(x, y) {
+/* ANCHOR main function
 
-        console.log(x, y);
-        console.log(this.epsilon);
+    This is the main method.  
+
+------------------------------------------------*/
+
+    identifyFunctionType(x, y) {
 
         if (this.alwaysNormalize) {
             x = this.normalize(x);
             y = this.normalize(y);
         }
-
-        console.log(x, y);
-
         // Linear
         const linearModel = this.linearRegression(x, y);
         const linearPred = x.map(xi => linearModel.slope * xi + linearModel.intercept);
@@ -208,7 +235,11 @@ const FitDetect = {
             exponentialDecay: decayError,
             rational: rationalError
         };
-        const bestFit = Object.keys(errors).reduce((a, b) => (errors[a] < errors[b] ? a : b));
+        const bestFit = Object.keys(errors).reduce((a, b) => {
+            if (isNaN(errors[a])) return b;
+            if (isNaN(errors[b])) return a;
+            return errors[a] < errors[b] ? a : b;
+        });
     
         return { bestFit, errors };
     }
@@ -216,5 +247,5 @@ const FitDetect = {
 }
 
 const x = [1, 2, 3, 4, 5];
-const y = [2, 4, 6, 8, 10]; // Lineáris
+const y = [1.98, 4, 6, 8, 10]; // Lineáris
 console.log(FitDetect.identifyFunctionType(x, y));
